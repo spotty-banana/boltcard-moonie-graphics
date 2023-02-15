@@ -1,11 +1,12 @@
 from PIL import Image, ImageDraw, ImageFont
+from datetime import datetime
 import random
 import math
 import numpy
 from numpy import array
 
-LNPAY_URL = "asdaso8y7hi7fhsaod78fhjoasidfhjolaisdhflias78hdlf78ashdi7fhsdalifosdid"
-BALANCE_URL = "8y7hi7fhsaod78fhjoasidfhjolaisdhflias78hdlf78ashdi7fhsdalifosdidasdaso"
+LNPAY_URL = "http://example.com/lnurlp/link/ASDASDASD"
+BALANCE_URL = "http://example.com/balance/ASDASDASD"
 
 def interpolate(f_co, t_co, interval):
     """ interpolate colors (gradient) """
@@ -42,7 +43,7 @@ def randomize_colors(img):
     return Image.fromarray(data)
 
 
-def create_card_graphics():
+def create_card_graphics(LNPAY_URL="https://lnbits.example.com/lnurlp/link/7jsdy3", BALANCE_URL=None):
     background = Image.new('RGBA', globe.size, color=0)
 
     draw = ImageDraw.Draw(background)
@@ -146,36 +147,45 @@ def create_card_graphics():
         background.paste(rover, (30, background.height-rover.height-30), rover)
 
     import qrcode
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=5,
-        border=0,
-    )
-    qr.add_data(LNPAY_URL)
-    qr.make(fit=True)
-
-    lnpay_qr = qr.make_image(fill_color="black", back_color="white")
-
-    background.paste(lnpay_qr, (30, 30), lnpay_qr)
-
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=5,
-        border=0,
-    )
-    qr.add_data(BALANCE_URL)
-    qr.make(fit=True)
-
-    lnpay_qr = qr.make_image(fill_color="black", back_color="white")
-
-    background.paste(lnpay_qr, (background.width-lnpay_qr.size[0]-30, 30), lnpay_qr)
 
     font = ImageFont.truetype("Ubuntu-Medium.ttf", size=24)
-    draw.text((30+lnpay_qr.size[0]/2, 35+lnpay_qr.size[0]), f"LNPay url", font=font, anchor="mt",)
-    draw.text((background.width-lnpay_qr.size[0]/2-30, 35+lnpay_qr.size[0]), f"Balance", font=font, anchor="mt",)
 
+    if LNPAY_URL:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=5,
+            border=0,
+        )
+        qr.add_data(LNPAY_URL)
+        qr.make(fit=True)
+
+        lnpay_qr = qr.make_image(fill_color="black", back_color="white")
+        lnpay_qr.thumbnail((200, 200), Image.Resampling.LANCZOS)
+
+        draw.rectangle([30, 30, 30+lnpay_qr.size[0], 30+lnpay_qr.size[1]], "black", "black", 0)
+        background.paste(lnpay_qr, (30, 30), lnpay_qr)
+
+        draw.text((30+lnpay_qr.size[0]/2, 35+lnpay_qr.size[0]), f"LNPay url", font=font, anchor="mt",)
+
+    if BALANCE_URL:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=5,
+            border=0,
+        )
+        qr.add_data(BALANCE_URL)
+        qr.make(fit=True)
+
+        balance_qr = qr.make_image(fill_color="black", back_color="white")
+        balance_qr.thumbnail((200, 200), Image.Resampling.LANCZOS)
+
+        draw.rectangle([30, 30, 30+balance_qr.size[0], 30+balance_qr.size[1]], "black", "black", 0)
+        background.paste(balance_qr, (background.width-balance_qr.size[0]-30, 30), lnpay_qr)
+
+        draw.text((background.width-balance_qr.size[0]/2-30, 35+balance_qr.size[0]), f"Balance", font=font, anchor="mt",)
+    
     draw.text((background.width/2, 30), f"btcmap.org/map?nfc", font=font, anchor="mt",)
     # draw.text((background.width/2, 60), f"boltcard.org", font=font, anchor="mt",)
 
@@ -183,7 +193,7 @@ def create_card_graphics():
 
     background.show()
 
-for i in range(0, 5):
+if __name__ == "__main__":
     random.seed()
     create_card_graphics()
 
